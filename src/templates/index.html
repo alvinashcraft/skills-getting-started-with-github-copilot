@@ -193,3 +193,23 @@ footer {
   padding: 20px;
   color: #666;
 }
+<section>
+  <h3>Register for an Activity</h3>
+  <form id="registration-form" action="/register" method="post">
+    <div class="form-group">
+      <label for="activity-select">Select Activity:</label>
+      <select id="activity-select" name="activity_id" required>
+        <option value="">-- Select an activity --</option>
+        {% for activity in activities %}
+          <option value="{{ activity.id }}">{{ activity.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="participant-name">Your Name:</label>
+      <input type="text" id="participant-name" name="participant_name" required>
+    </div>
+    <button type="submit">Register</button>
+  </form>
+  <div id="message" class="message hidden"></div>
+</section>

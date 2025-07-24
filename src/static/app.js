@@ -81,6 +81,47 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  // Handle the registration form submission
+  const registrationForm = document.getElementById("registration-form");
+  if (registrationForm) {
+    registrationForm.addEventListener("submit", function (e) {
+      const activityId = document.getElementById("activity-select").value;
+      const participantName = document.getElementById("participant-name").value;
+
+      if (!activityId || !participantName) {
+        e.preventDefault();
+        showMessage("Please fill in all fields", "error");
+      }
+    });
+  }
+
+  // Check for URL parameters to show success/error messages
+  const urlParams = new URLSearchParams(window.location.search);
+  const errorMessage = urlParams.get("error");
+  const successMessage = urlParams.get("message");
+
+  if (errorMessage) {
+    showMessage(errorMessage, "error");
+  }
+
+  if (successMessage) {
+    showMessage(successMessage, "success");
+  }
+
+  // Function to show messages
+  function showMessage(text, type) {
+    const messageDiv = document.getElementById("message");
+    if (messageDiv) {
+      messageDiv.textContent = text;
+      messageDiv.className = `message ${type}`;
+      messageDiv.classList.remove("hidden");
+
+      setTimeout(() => {
+        messageDiv.classList.add("hidden");
+      }, 5000);
+    }
+  }
+
   // Initialize app
   fetchActivities();
 });
