@@ -19,66 +19,37 @@ current_dir = Path(__file__).parent
 app.mount("/static", StaticFiles(directory=os.path.join(Path(__file__).parent,
           "static")), name="static")
 
+
+# Update the Activity class to include participants
+class Activity:
+    def __init__(self, id, name, date, location, description):
+        self.id = id
+        self.name = name
+        self.date = date
+        self.location = location
+        self.description = description
+        self.participants = []  # Add a list to store participants
+
+
 # In-memory activity database
-activities = {
-    "Chess Club": {
-        "description": "Learn strategies and compete in chess tournaments",
-        "schedule": "Fridays, 3:30 PM - 5:00 PM",
-        "max_participants": 12,
-        "participants": ["michael@mergington.edu", "daniel@mergington.edu"]
-    },
-    "Programming Class": {
-        "description": "Learn programming fundamentals and build software projects",
-        "schedule": "Tuesdays and Thursdays, 3:30 PM - 4:30 PM",
-        "max_participants": 20,
-        "participants": ["emma@mergington.edu", "sophia@mergington.edu"]
-    },
-    "Gym Class": {
-        "description": "Physical education and sports activities",
-        "schedule": "Mondays, Wednesdays, Fridays, 2:00 PM - 3:00 PM",
-        "max_participants": 30,
-        "participants": ["john@mergington.edu", "olivia@mergington.edu"]
-    },
-    # Sports related activities
-    "Soccer Team": {
-        "description": "Join the school soccer team and compete in matches",
-        "schedule": "Wednesdays, 4:00 PM - 5:30 PM",
-        "max_participants": 22,
-        "participants": ["alex@mergington.edu", "lucas@mergington.edu"]
-    },
-    "Basketball Club": {
-        "description": "Practice basketball skills and play friendly games",
-        "schedule": "Mondays, 3:30 PM - 5:00 PM",
-        "max_participants": 15,
-        "participants": ["mia@mergington.edu", "noah@mergington.edu"]
-    },
-    # Artistic activities
-    "Art Workshop": {
-        "description": "Explore painting, drawing, and sculpture techniques",
-        "schedule": "Thursdays, 4:00 PM - 5:30 PM",
-        "max_participants": 18,
-        "participants": ["ava@mergington.edu", "liam@mergington.edu"]
-    },
-    "Drama Club": {
-        "description": "Act, direct, and produce school plays and performances",
-        "schedule": "Tuesdays, 3:30 PM - 5:00 PM",
-        "max_participants": 20,
-        "participants": ["ella@mergington.edu", "jack@mergington.edu"]
-    },
-    # Intellectual activities
-    "Math Olympiad": {
-        "description": "Prepare for math competitions and solve challenging problems",
-        "schedule": "Fridays, 4:00 PM - 5:30 PM",
-        "max_participants": 16,
-        "participants": ["oliver@mergington.edu", "isabella@mergington.edu"]
-    },
-    "Science Club": {
-        "description": "Conduct experiments and explore scientific concepts",
-        "schedule": "Wednesdays, 3:30 PM - 5:00 PM",
-        "max_participants": 14,
-        "participants": ["charlotte@mergington.edu", "benjamin@mergington.edu"]
-    }
-}
+activities = [
+    Activity(1, "Hiking at Mountain Trail", "2023-10-15", "Mountain Park",
+             "A beginner-friendly hiking trip with beautiful views."),
+    Activity(2, "Community Cleanup", "2023-10-22", "City Beach",
+             "Help keep our beach clean! Supplies will be provided."),
+    Activity(3, "Charity Run", "2023-11-05", "Downtown",
+             "5k run to raise funds for the local animal shelter.")
+]
+
+
+# Add function to add a participant to an activity
+def add_participant_to_activity(activity_id, participant_name):
+    for activity in activities:
+        if activity.id == int(activity_id):
+            if participant_name not in activity.participants:
+                activity.participants.append(participant_name)
+                return True
+    return False
 
 
 @app.get("/")
@@ -108,3 +79,28 @@ def signup_for_activity(activity_name: str, email: str):
     # Add student
     activity["participants"].append(email)
     return {"message": f"Signed up {email} for {activity_name}"}
+
+
+# Add route to handle participant registration
+@app.route('/register', methods=['POST'])
+def register():
+    activity_id = request.form.get('activity_id')
+    participant_name = request.form.get('participant_name')
+
+    if not activity_id or not participant_name:
+        return redirect(url_for('index', error="Please fill in all fields"))
+
+    success = add_participant_to_activity(activity_id, participant_name)
+
+    if success:
+        return redirect(url_for('index', message="Successfully registered for the activity!"))
+    else:
+        return redirect(url_for('index', error="Activity not found or registration failed"))
+
+
+# Update the index route to pass error/success messages
+@app.route('/')
+def index():
+    error = request.args.get('error')
+    message = request.args.get('message')
+    return render_template('index.html', activities=activities, error=error, message=message)
